@@ -1,21 +1,17 @@
 import '../global.css';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Stack } from 'expo-router';
+import { useFonts, Nabla_400Regular } from '@expo-google-fonts/nabla';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+const Layout = () => {
+  const [fontsLoaded] = useFonts({
+    Nabla: Nabla_400Regular,
+  });
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  if (!fontsLoaded) {
+    return null;
+  }
+
+  return <Stack />;
+};
+
+export default Layout;
