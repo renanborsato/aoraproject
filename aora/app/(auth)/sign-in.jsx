@@ -1,11 +1,39 @@
-import { View, Text } from "react-native";
 import React from "react";
+import { ScrollView, StatusBar, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+
+import CustomButton from "../../components/CustomButton";
 
 const SignIn = () => {
+  const handleExit = () => {
+    router.replace("/home");
+  };
+
   return (
-    <View>
-      <Text>SignIn</Text>
-    </View>
+    <SafeAreaView className="flex-1 bg-background">
+      <StatusBar barStyle="light-content" backgroundColor="#161622" />
+
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{
+          flexGrow: 1,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="flex-1 items-center justify-center px-6 py-10">
+          <Text className="font-nabla text-5xl text-primary">Sign In</Text>
+
+          <View className="mt-8 w-full">
+            <CustomButton
+              title="Sign In"
+              handlePress={handleExit}
+              isLoading={false}
+            />
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

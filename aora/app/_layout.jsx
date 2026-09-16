@@ -1,9 +1,11 @@
 import "../global.css";
-import { Stack, Tabs, Redirect } from "expo-router";
-import { View, Image, Text } from "react-native";
-import { useFonts, Nabla_400Regular } from "@expo-google-fonts/nabla";
 
-const Layout = () => {
+import React from "react";
+import { Stack } from "expo-router";
+import { Nabla_400Regular } from "@expo-google-fonts/nabla";
+import { useFonts } from "@expo-google-fonts/nabla";
+
+const RootLayout = () => {
   const [fontsLoaded] = useFonts({
     Nabla: Nabla_400Regular,
   });
@@ -12,7 +14,13 @@ const Layout = () => {
     return null;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    />
+  );
 };
 
-export default Layout;
+export default RootLayout;
