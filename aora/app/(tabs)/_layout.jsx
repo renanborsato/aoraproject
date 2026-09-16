@@ -1,12 +1,13 @@
 import { View, Text } from "react-native";
 import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+import { Ionicons } from "@expo/vector-icons";
 
 const TabIcon = ({ name, color, label, focused }) => {
   return (
     <View className="items-center justify-center gap-1 w-20">
       <Ionicons name={name} size={24} color={color} />
+
       <Text
         style={{ color, fontSize: 12 }}
         className={focused ? "font-psemibold" : "font-pregular"}
@@ -40,10 +41,16 @@ export default function TabsLayout() {
           title: "Home",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="home" color={color} label="Home" focused={focused} />
+            <TabIcon
+              name={focused ? "home" : "home-outline"}
+              color={color}
+              label="Home"
+              focused={focused}
+            />
           ),
         }}
       />
+
       <Tabs.Screen
         name="bookmark"
         options={{
@@ -51,7 +58,7 @@ export default function TabsLayout() {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              name="bookmark"
+              name={focused ? "bookmark" : "bookmark-outline"}
               color={color}
               label="Bookmarks"
               focused={focused}
@@ -59,21 +66,23 @@ export default function TabsLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="create"
         options={{
           title: "Create",
           headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ color }) => (
             <TabIcon
               name="add-circle-outline"
               color={color}
               label="Create"
-              focused={focused}
+              focused={false}
             />
           ),
         }}
       />
+
       <Tabs.Screen
         name="profile"
         options={{
@@ -81,7 +90,7 @@ export default function TabsLayout() {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              name="person"
+              name={focused ? "person" : "person-outline"}
               color={color}
               label="Profile"
               focused={focused}

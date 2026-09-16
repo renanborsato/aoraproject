@@ -1,5 +1,6 @@
 import "../global.css";
-import { Stack } from "expo-router";
+import { Stack, Tabs, Redirect } from "expo-router";
+import { View, Image, Text } from "react-native";
 import { useFonts, Nabla_400Regular } from "@expo-google-fonts/nabla";
 
 const Layout = () => {
