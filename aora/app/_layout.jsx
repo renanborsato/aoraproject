@@ -1,6 +1,6 @@
-import '../global.css';
-import { Stack } from 'expo-router';
-import { useFonts, Nabla_400Regular } from '@expo-google-fonts/nabla';
+import "../global.css";
+import { Stack } from "expo-router";
+import { useFonts, Nabla_400Regular } from "@expo-google-fonts/nabla";
 
 const Layout = () => {
   const [fontsLoaded] = useFonts({
@@ -11,7 +11,7 @@ const Layout = () => {
     return null;
   }
 
-  return <Stack />;
+  return <Stack screenOptions={{ headerShown: false }} />;
 };
 
 export default Layout;
