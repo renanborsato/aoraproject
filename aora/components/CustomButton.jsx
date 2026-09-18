@@ -27,13 +27,9 @@ const CustomButton = ({
         <ActivityIndicator size="small" color="#FFFFFF" />
       ) : (
         <View style={styles.content}>
-          <Ionicons name="mail-outline" size={22} color="#FFFFFF" />
-
           <Text className={textStyles} style={styles.text}>
             {title}
           </Text>
-
-          <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
         </View>
       )}
     </TouchableOpacity>
