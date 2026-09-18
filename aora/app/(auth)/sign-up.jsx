@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { Image, ScrollView, StatusBar, Text, View } from "react-native";
+import { Alert, Image, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
 
 import CustomButton from "../../components/CustomButton";
 import CustomFormField from "../../components/CustomFormField";
 import icon from "../../assets/icon.png";
+import { createUserAccount } from "../../lib/auth";
+
+const getErrorMessage = (error) => error?.message || "Unable to create the account. Please try again.";
 
 const SignUp = () => {
   const [form, setForm] = useState({
@@ -36,8 +39,8 @@ const SignUp = () => {
 
     if (!form.password) {
       nextErrors.password = "Password is required.";
-    } else if (form.password.length < 6) {
-      nextErrors.password = "Password must be at least 6 characters.";
+    } else if (form.password.length < 8) {
+      nextErrors.password = "Password must be at least 8 characters.";
     }
 
     setErrors(nextErrors);
@@ -50,9 +53,10 @@ const SignUp = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate account creation until a backend is connected.
-      await new Promise((resolve) => setTimeout(resolve, 900));
-      router.replace("/(auth)/sign-in");
+      await createUserAccount(form);
+      router.replace("/(tabs)/home");
+    } catch (error) {
+      Alert.alert("Sign up failed", getErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }

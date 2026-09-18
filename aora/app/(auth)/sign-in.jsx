@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { Image, ScrollView, StatusBar, Text, View } from "react-native";
+import { Alert, Image, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
 
 import CustomButton from "../../components/CustomButton";
 import CustomFormField from "../../components/CustomFormField";
 import icon from "../../assets/icon.png";
+import { signInUser } from "../../lib/auth";
+
+const getErrorMessage = (error) => error?.message || "Unable to sign in. Please try again.";
 
 const SignIn = () => {
   const [form, setForm] = useState({
@@ -40,9 +43,10 @@ const SignIn = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate an authentication request until a backend is connected.
-      await new Promise((resolve) => setTimeout(resolve, 900));
+      await signInUser(form);
       router.replace("/(tabs)/home");
+    } catch (error) {
+      Alert.alert("Sign in failed", getErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -118,7 +122,8 @@ const SignIn = () => {
             </Text>
             <Link
               href="/(auth)/sign-up"
-              className="font-psemibold text-sm text-primary"
+              className="text-sm"
+              style={{ color: "#3B82F6", fontWeight: "600" }}
             >
               Sign up
             </Link>
