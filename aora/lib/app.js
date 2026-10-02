@@ -1,5 +1,5 @@
 import "react-native-url-polyfill/auto";
-import { Account, Client, ID, Permission, Role, Storage, TablesDB } from "react-native-appwrite";
+import { Account, Client, ID, Permission, Query, Role, Storage, TablesDB } from "react-native-appwrite";
 
 const endpoint = process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.appwrite.io/v1";
 const projectId = process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID;
@@ -12,7 +12,7 @@ if (platform) client.setPlatform(platform);
 export const account = new Account(client);
 export const tablesDB = new TablesDB(client);
 export const storage = new Storage(client);
-export { ID, Permission, Role };
+export { ID, Permission, Query, Role };
 
 export const APPWRITE_CONFIG = {
   endpoint,

@@ -1,4 +1,17 @@
-import { ID, Permission, Role, tablesDB, APPWRITE_CONFIG } from "./app";
+import { ID, Permission, Query, Role, tablesDB, APPWRITE_CONFIG } from "./app";
+
+export const getAllPosts = async () => {
+  if (!APPWRITE_CONFIG.databaseId || !APPWRITE_CONFIG.videosTableId) {
+    throw new Error("Missing Appwrite database or videos table configuration.");
+  }
+
+  const result = await tablesDB.listRows({
+    databaseId: APPWRITE_CONFIG.databaseId,
+    tableId: APPWRITE_CONFIG.videosTableId,
+    queries: [Query.orderDesc("$createdAt"), Query.limit(25)],
+  });
+  return result.rows;
+};
 
 export const getUserProfile = (userId) => tablesDB.getRow({
   databaseId: APPWRITE_CONFIG.databaseId,
