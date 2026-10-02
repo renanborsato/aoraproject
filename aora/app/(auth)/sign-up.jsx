@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Alert, Image, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, router } from "expo-router";
+import { Link } from "expo-router";
 
 import CustomButton from "../../components/CustomButton";
 import CustomFormField from "../../components/CustomFormField";
 import icon from "../../assets/icon.png";
-import { createUserAccount } from "../../lib/auth";
+import { useGlobalContext } from "../../lib/global-provider";
 
 const getErrorMessage = (error) => error?.message || "Unable to create the account. Please try again.";
 
@@ -19,6 +19,7 @@ const SignUp = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { createAccount } = useGlobalContext();
 
   const validateForm = () => {
     const nextErrors = {};
@@ -44,6 +45,9 @@ const SignUp = () => {
     }
 
     setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      Alert.alert("Check your details", Object.values(nextErrors).join("\n"));
+    }
     return Object.keys(nextErrors).length === 0;
   };
 
@@ -53,8 +57,7 @@ const SignUp = () => {
     setIsSubmitting(true);
 
     try {
-      await createUserAccount(form);
-      router.replace("/(tabs)/home");
+      await createAccount(form);
     } catch (error) {
       Alert.alert("Sign up failed", getErrorMessage(error));
     } finally {
@@ -143,9 +146,10 @@ const SignUp = () => {
             </Text>
             <Link
               href="/(auth)/sign-in"
-              className="font-psemibold text-sm text-primary"
+              className="font-psemibold text-sm"
+              style={{ color: "#3B82F6", fontWeight: "600" }}
             >
-              Sign in
+              Sign In
             </Link>
           </View>
         </View>

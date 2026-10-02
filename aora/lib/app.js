@@ -5,7 +5,7 @@ const endpoint = process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT || "https://cloud.app
 const projectId = process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID;
 const platform = process.env.EXPO_PUBLIC_APPWRITE_PLATFORM;
 
-const client = new Client().setEndpoint(endpoint);
+export const client = new Client().setEndpoint(endpoint);
 if (projectId) client.setProject(projectId);
 if (platform) client.setPlatform(platform);
 

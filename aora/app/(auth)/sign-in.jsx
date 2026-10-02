@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Alert, Image, ScrollView, StatusBar, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, router } from "expo-router";
+import { Link } from "expo-router";
 
 import CustomButton from "../../components/CustomButton";
 import CustomFormField from "../../components/CustomFormField";
 import icon from "../../assets/icon.png";
-import { signInUser } from "../../lib/auth";
+import { useGlobalContext } from "../../lib/global-provider";
 
 const getErrorMessage = (error) => error?.message || "Unable to sign in. Please try again.";
 
@@ -18,6 +18,7 @@ const SignIn = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { signIn } = useGlobalContext();
 
   const validateForm = () => {
     const nextErrors = {};
@@ -34,6 +35,9 @@ const SignIn = () => {
     }
 
     setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      Alert.alert("Check your details", Object.values(nextErrors).join("\n"));
+    }
     return Object.keys(nextErrors).length === 0;
   };
 
@@ -43,8 +47,7 @@ const SignIn = () => {
     setIsSubmitting(true);
 
     try {
-      await signInUser(form);
-      router.replace("/(tabs)/home");
+      await signIn(form);
     } catch (error) {
       Alert.alert("Sign in failed", getErrorMessage(error));
     } finally {
@@ -125,7 +128,7 @@ const SignIn = () => {
               className="text-sm"
               style={{ color: "#3B82F6", fontWeight: "600" }}
             >
-              Sign up
+              Sign Up
             </Link>
           </View>
         </View>
