@@ -6,26 +6,30 @@ import SearchInput from "../../components/SearchInput";
 import Trending from "../../components/Trending";
 import VideoCard from "../../components/VideoCard";
 import { images } from "../../constants/images";
-import { getAllPosts } from "../../lib/database";
+import { getAllPosts, getLatestPosts } from "../../lib/database";
 import { useGlobalContext } from "../../lib/global-provider";
 import useAppwrite from "../../lib/useAppwrite";
 
 const placeholderPosts = [
-  { $id: "sample-1", title: "A morning in the mountains", prompt: "A short travel video placeholder.", creatorName: "Sample creator", isPlaceholder: true },
-  { $id: "sample-2", title: "Finding inspiration in the city", prompt: "A creative video placeholder.", creatorName: "Sample creator", isPlaceholder: true },
-  { $id: "sample-3", title: "A quiet afternoon", prompt: "A community story placeholder.", creatorName: "Sample creator", isPlaceholder: true },
-  { $id: "sample-4", title: "Behind the scenes", prompt: "A behind-the-scenes video placeholder.", creatorName: "Sample creator", isPlaceholder: true },
+  { $id: "sample-1", title: "A morning in the mountains", prompt: "A short travel video placeholder.", creatorName: "Sample creator", video: require("../../assets/yeah_boy.mp4"), isPlaceholder: true },
+  { $id: "sample-2", title: "Finding inspiration in the city", prompt: "A creative video placeholder.", creatorName: "Sample creator", video: require("../../assets/yeah_boy.mp4"), isPlaceholder: true },
+  { $id: "sample-3", title: "A quiet afternoon", prompt: "A community story placeholder.", creatorName: "Sample creator", video: require("../../assets/yeah_boy.mp4"), isPlaceholder: true },
+  { $id: "sample-4", title: "Behind the scenes", prompt: "A behind-the-scenes video placeholder.", creatorName: "Sample creator", video: require("../../assets/yeah_boy.mp4"), isPlaceholder: true },
 ];
+const videoViewabilityConfig = { itemVisiblePercentThreshold: 35 };
 
 export default function Home() {
   const { user } = useGlobalContext();
   const fetchPosts = useCallback(() => getAllPosts(), []);
   const { data: posts, isLoading, error, refetch } = useAppwrite(fetchPosts);
+  const fetchTrendingPosts = useCallback(() => getLatestPosts(), []);
+  const { data: trendingPosts, isLoading: isTrendingLoading, refetch: refetchTrendingPosts } = useAppwrite(fetchTrendingPosts);
   const [searchText, setSearchText] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [playingPostId, setPlayingPostId] = useState(null);
   const displayName = user?.profile?.username || user?.name || "there";
   const verticalPosts = posts.length ? posts : placeholderPosts;
+  const trendingSourcePosts = trendingPosts.length ? trendingPosts : placeholderPosts;
 
   useEffect(() => {
     if (error) Alert.alert("Could not load videos", error.message || "Please try again.");
@@ -33,12 +37,31 @@ export default function Home() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  }, [refetch]);
+    try {
+      await Promise.all([refetch(), refetchTrendingPosts()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch, refetchTrendingPosts]);
 
   const toggleVideo = useCallback((postId) => {
     setPlayingPostId((currentId) => currentId === postId ? null : postId);
+  }, []);
+
+  const stopVideo = useCallback((postId) => {
+    setPlayingPostId((currentId) => currentId === postId ? null : currentId);
+  }, []);
+
+  const handleTrendingActiveChange = useCallback((activePostId) => {
+    setPlayingPostId((currentId) => currentId?.startsWith("trending-") && currentId !== activePostId ? null : currentId);
+  }, []);
+
+  const handleVerticalViewableItemsChanged = useCallback(({ viewableItems }) => {
+    const visiblePostIds = new Set(viewableItems.map(({ item }) => item.$id));
+    setPlayingPostId((currentId) => {
+      if (currentId?.startsWith("latest-") && !visiblePostIds.has(currentId.slice("latest-".length))) return null;
+      return currentId;
+    });
   }, []);
 
   const filteredPosts = useMemo(() => {
@@ -49,9 +72,9 @@ export default function Home() {
 
   const filteredTrendingPosts = useMemo(() => {
     const query = searchText.trim().toLowerCase();
-    if (!query) return posts;
-    return posts.filter((post) => `${post.title || ""} ${post.prompt || ""}`.toLowerCase().includes(query));
-  }, [posts, searchText]);
+    if (!query) return trendingSourcePosts;
+    return trendingSourcePosts.filter((post) => `${post.title || ""} ${post.prompt || ""}`.toLowerCase().includes(query));
+  }, [trendingSourcePosts, searchText]);
 
   const listHeader = (
     <View className="pb-6">
@@ -68,7 +91,14 @@ export default function Home() {
       </View>
 
       <Text className="mb-4 mt-8 font-semibold text-xl text-white">Trending</Text>
-      <Trending posts={filteredTrendingPosts} playingPostId={playingPostId} onTogglePlay={toggleVideo} />
+      <Trending
+        posts={filteredTrendingPosts}
+        playingPostId={playingPostId}
+        onTogglePlay={toggleVideo}
+        onPlaybackEnd={stopVideo}
+        onActiveChange={handleTrendingActiveChange}
+        showEmptyState={!isTrendingLoading && trendingPosts.length === 0 && filteredTrendingPosts.length > 0}
+      />
 
       <View className="mt-8 flex-row items-center justify-between">
         <Text className="font-semibold text-xl text-white">Latest Videos</Text>
@@ -85,12 +115,15 @@ export default function Home() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }}
         data={filteredPosts}
         keyExtractor={(post) => post.$id}
+        viewabilityConfig={videoViewabilityConfig}
+        onViewableItemsChanged={handleVerticalViewableItemsChanged}
         renderItem={({ item }) => (
           <VideoCard
             post={item}
             playKey={`latest-${item.$id}`}
             isPlaying={playingPostId === `latest-${item.$id}`}
             onTogglePlay={toggleVideo}
+            onPlaybackEnd={stopVideo}
           />
         )}
         ListHeaderComponent={listHeader}

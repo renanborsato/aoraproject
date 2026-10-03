@@ -13,6 +13,19 @@ export const getAllPosts = async () => {
   return result.rows;
 };
 
+export const getLatestPosts = async () => {
+  if (!APPWRITE_CONFIG.databaseId || !APPWRITE_CONFIG.videosTableId) {
+    throw new Error("Missing Appwrite database or videos table configuration.");
+  }
+
+  const result = await tablesDB.listRows({
+    databaseId: APPWRITE_CONFIG.databaseId,
+    tableId: APPWRITE_CONFIG.videosTableId,
+    queries: [Query.orderDesc("$createdAt"), Query.limit(7)],
+  });
+  return result.rows;
+};
+
 export const getUserProfile = (userId) => tablesDB.getRow({
   databaseId: APPWRITE_CONFIG.databaseId,
   tableId: APPWRITE_CONFIG.usersTableId,
