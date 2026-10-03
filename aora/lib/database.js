@@ -26,6 +26,22 @@ export const getLatestPosts = async () => {
   return result.rows;
 };
 
+export const searchPosts = async (searchTerm) => {
+  const query = searchTerm.trim();
+  if (query.length < 3) return [];
+
+  if (!APPWRITE_CONFIG.databaseId || !APPWRITE_CONFIG.videosTableId) {
+    throw new Error("Missing Appwrite database or videos table configuration.");
+  }
+
+  const result = await tablesDB.listRows({
+    databaseId: APPWRITE_CONFIG.databaseId,
+    tableId: APPWRITE_CONFIG.videosTableId,
+    queries: [Query.search("title", query), Query.orderDesc("$createdAt"), Query.limit(25)],
+  });
+  return result.rows;
+};
+
 export const getUserProfile = (userId) => tablesDB.getRow({
   databaseId: APPWRITE_CONFIG.databaseId,
   tableId: APPWRITE_CONFIG.usersTableId,

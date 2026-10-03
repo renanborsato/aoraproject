@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, FlatList, Image, Keyboard, RefreshControl, StatusBar, Text, View } from "react-native";
+import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import SearchInput from "../../components/SearchInput";
@@ -64,6 +65,16 @@ export default function Home() {
     });
   }, []);
 
+  const handleSearch = useCallback(() => {
+    const query = searchText.trim();
+    if (!query) {
+      Alert.alert("Search videos", "Enter a topic to search for.");
+      return;
+    }
+    Keyboard.dismiss();
+    router.push({ pathname: "/search/[query]", params: { query } });
+  }, [searchText]);
+
   const filteredPosts = useMemo(() => {
     const query = searchText.trim().toLowerCase();
     if (!query) return verticalPosts;
@@ -87,7 +98,12 @@ export default function Home() {
       </View>
 
       <View className="mt-7">
-        <SearchInput value={searchText} onChangeText={setSearchText} onSubmit={Keyboard.dismiss} />
+        {searchText.trim() ? (
+          <Text className="mb-3 font-semibold text-base text-white">
+            Search results for “{searchText.trim()}”
+          </Text>
+        ) : null}
+        <SearchInput value={searchText} onChangeText={setSearchText} onSubmit={handleSearch} />
       </View>
 
       <Text className="mb-4 mt-8 font-semibold text-xl text-white">Trending</Text>
