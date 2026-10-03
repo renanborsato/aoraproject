@@ -4,63 +4,42 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import SearchInput from "../../components/SearchInput";
 import Trending from "../../components/Trending";
+import VideoCard from "../../components/VideoCard";
 import { images } from "../../constants/images";
 import { getAllPosts } from "../../lib/database";
 import { useGlobalContext } from "../../lib/global-provider";
+import useAppwrite from "../../lib/useAppwrite";
 
 const placeholderPosts = [
-  { $id: "sample-1", title: "A morning in the mountains", prompt: "A short travel video placeholder.", isPlaceholder: true },
-  { $id: "sample-2", title: "Finding inspiration in the city", prompt: "A creative video placeholder.", isPlaceholder: true },
-  { $id: "sample-3", title: "A quiet afternoon", prompt: "A community story placeholder.", isPlaceholder: true },
-  { $id: "sample-4", title: "Behind the scenes", prompt: "A behind-the-scenes video placeholder.", isPlaceholder: true },
+  { $id: "sample-1", title: "A morning in the mountains", prompt: "A short travel video placeholder.", creatorName: "Sample creator", isPlaceholder: true },
+  { $id: "sample-2", title: "Finding inspiration in the city", prompt: "A creative video placeholder.", creatorName: "Sample creator", isPlaceholder: true },
+  { $id: "sample-3", title: "A quiet afternoon", prompt: "A community story placeholder.", creatorName: "Sample creator", isPlaceholder: true },
+  { $id: "sample-4", title: "Behind the scenes", prompt: "A behind-the-scenes video placeholder.", creatorName: "Sample creator", isPlaceholder: true },
 ];
-
-function VideoPost({ post }) {
-  return (
-    <View className="mb-5 rounded-2xl border border-secondary bg-[#0D0D13] p-3">
-      <View className="aspect-video items-center justify-center rounded-xl bg-white">
-        <Text className="text-sm text-gray-500">Video preview</Text>
-      </View>
-      <Text className="mt-3 font-semibold text-base text-white">{post.title || "Untitled video"}</Text>
-      {post.prompt ? <Text className="mt-1 text-sm text-gray-300" numberOfLines={2}>{post.prompt}</Text> : null}
-      {post.isPlaceholder ? <Text className="mt-2 text-xs text-primary">Sample video · preview only</Text> : null}
-    </View>
-  );
-}
 
 export default function Home() {
   const { user } = useGlobalContext();
-  const [posts, setPosts] = useState([]);
+  const fetchPosts = useCallback(() => getAllPosts(), []);
+  const { data: posts, isLoading, error, refetch } = useAppwrite(fetchPosts);
   const [searchText, setSearchText] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [playingPostId, setPlayingPostId] = useState(null);
   const displayName = user?.profile?.username || user?.name || "there";
   const verticalPosts = posts.length ? posts : placeholderPosts;
 
-  const loadPosts = useCallback(async () => {
-    const latestPosts = await getAllPosts();
-    setPosts(latestPosts);
-  }, []);
-
   useEffect(() => {
-    let isCurrent = true;
-    getAllPosts()
-      .then((latestPosts) => { if (isCurrent) setPosts(latestPosts); })
-      .catch((error) => { if (isCurrent) Alert.alert("Could not load videos", error?.message || "Please try again."); })
-      .finally(() => { if (isCurrent) setIsLoading(false); });
-    return () => { isCurrent = false; };
-  }, []);
+    if (error) Alert.alert("Could not load videos", error.message || "Please try again.");
+  }, [error]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    try {
-      await loadPosts();
-    } catch (error) {
-      Alert.alert("Could not refresh videos", error?.message || "Please try again.");
-    } finally {
-      setRefreshing(false);
-    }
-  }, [loadPosts]);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
+
+  const toggleVideo = useCallback((postId) => {
+    setPlayingPostId((currentId) => currentId === postId ? null : postId);
+  }, []);
 
   const filteredPosts = useMemo(() => {
     const query = searchText.trim().toLowerCase();
@@ -89,7 +68,7 @@ export default function Home() {
       </View>
 
       <Text className="mb-4 mt-8 font-semibold text-xl text-white">Trending</Text>
-      <Trending posts={filteredTrendingPosts} />
+      <Trending posts={filteredTrendingPosts} playingPostId={playingPostId} onTogglePlay={toggleVideo} />
 
       <View className="mt-8 flex-row items-center justify-between">
         <Text className="font-semibold text-xl text-white">Latest Videos</Text>
@@ -106,7 +85,14 @@ export default function Home() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }}
         data={filteredPosts}
         keyExtractor={(post) => post.$id}
-        renderItem={({ item }) => <VideoPost post={item} />}
+        renderItem={({ item }) => (
+          <VideoCard
+            post={item}
+            playKey={`latest-${item.$id}`}
+            isPlaying={playingPostId === `latest-${item.$id}`}
+            onTogglePlay={toggleVideo}
+          />
+        )}
         ListHeaderComponent={listHeader}
         ListEmptyComponent={isLoading && posts.length === 0 ? <Text className="py-6 text-center text-sm text-gray-400">Loading videos...</Text> : null}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FFA001" colors={["#FFA001"]} />}
