@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
 
-export default function useAppwrite(fetchFunction) {
+export default function useAppwrite(fetchFunction, { refetchOnFocus = false } = {}) {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,8 +22,14 @@ export default function useAppwrite(fetchFunction) {
   }, [fetchFunction]);
 
   useEffect(() => {
-    refetch();
-  }, [refetch]);
+    if (!refetchOnFocus) refetch();
+  }, [refetch, refetchOnFocus]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (refetchOnFocus) refetch();
+    }, [refetch, refetchOnFocus]),
+  );
 
   return { data, isLoading, error, refetch };
 }

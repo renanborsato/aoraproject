@@ -22,9 +22,9 @@ const videoViewabilityConfig = { itemVisiblePercentThreshold: 35 };
 export default function Home() {
   const { user } = useGlobalContext();
   const fetchPosts = useCallback(() => getAllPosts(), []);
-  const { data: posts, isLoading, error, refetch } = useAppwrite(fetchPosts);
+  const { data: posts, isLoading, error, refetch } = useAppwrite(fetchPosts, { refetchOnFocus: true });
   const fetchTrendingPosts = useCallback(() => getLatestPosts(), []);
-  const { data: trendingPosts, isLoading: isTrendingLoading, refetch: refetchTrendingPosts } = useAppwrite(fetchTrendingPosts);
+  const { data: trendingPosts, isLoading: isTrendingLoading, refetch: refetchTrendingPosts } = useAppwrite(fetchTrendingPosts, { refetchOnFocus: true });
   const [searchText, setSearchText] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [playingPostId, setPlayingPostId] = useState(null);

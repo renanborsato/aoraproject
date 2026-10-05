@@ -15,18 +15,20 @@ const CustomFormField = ({
   autoComplete,
   textContentType,
   error,
+  multiline = false,
+  numberOfLines = 1,
 }) => {
   return (
     <View className={`w-full ${otherStyles}`}>
       <Text className="mb-2 font-pmedium text-sm text-gray-100">{title}</Text>
 
       <View
-        className={`h-16 flex-row items-center rounded-2xl border px-4 ${
+        className={`${multiline ? "min-h-36 items-start py-4" : "h-16 items-center"} flex-row rounded-2xl border px-4 ${
           error ? "border-red-400" : "border-secondary"
         } bg-black-100`}
       >
         <TextInput
-          className="flex-1 font-pregular text-base text-white"
+          className={`flex-1 font-pregular text-base text-white ${multiline ? "min-h-28" : ""}`}
           value={value}
           placeholder={placeholder}
           placeholderTextColor="#7B7B8B"
@@ -37,7 +39,10 @@ const CustomFormField = ({
           autoCorrect={false}
           autoComplete={autoComplete}
           textContentType={textContentType}
-          returnKeyType="done"
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          textAlignVertical={multiline ? "top" : "center"}
+          returnKeyType={multiline ? "default" : "done"}
         />
 
         {toggleSecureEntry ? (

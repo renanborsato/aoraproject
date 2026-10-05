@@ -1,4 +1,5 @@
-import { ID, Permission, Role, account, client, tablesDB, APPWRITE_CONFIG } from "./app";
+import { ID, Permission, Role, account, tablesDB, APPWRITE_CONFIG } from "./app";
+import { clearSession, createPasswordSession, restoreSession } from "./session";
 
 const requireProfileConfig = () => {
   const missing = [];
@@ -51,7 +52,7 @@ export const createUserAccount = async ({ email, password, username }) => {
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedUsername = username.trim();
   const user = await account.create({ userId: ID.unique(), email: normalizedEmail, password, name: normalizedUsername });
-  await account.createEmailPasswordSession({ email: normalizedEmail, password });
+  await createPasswordSession({ email: normalizedEmail, password });
   const profile = await getOrCreateUserProfile(user);
   return { ...user, profile };
 };
@@ -62,15 +63,16 @@ export const signInUser = async ({ email, password }) => {
   // Appwrite rejects a second email/password session when this client still has
   // an active session. Clear the previous account before authenticating again.
   try {
+    await restoreSession();
     await account.deleteSession({ sessionId: "current" });
   } catch {
     // A missing or expired session is expected when signing in from a clean start.
   } finally {
-    delete client.headers["X-Appwrite-Session"];
+    await clearSession();
   }
 
   const normalizedEmail = email.trim().toLowerCase();
-  await account.createEmailPasswordSession({ email: normalizedEmail, password });
+  await createPasswordSession({ email: normalizedEmail, password });
   const user = await account.get();
   const profile = await getOrCreateUserProfile(user);
   return { ...user, profile };
@@ -80,12 +82,13 @@ export const signOutUser = async () => {
   try {
     await account.deleteSession({ sessionId: "current" });
   } finally {
-    delete client.headers["X-Appwrite-Session"];
+    await clearSession();
   }
 };
 
 export const getCurrentUser = async () => {
   try {
+    await restoreSession();
     const user = await account.get();
     const profile = await getOrCreateUserProfile(user);
     return { ...user, profile };
